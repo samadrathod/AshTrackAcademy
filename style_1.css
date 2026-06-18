@@ -381,31 +381,92 @@ a {
     font-weight: 700;
 }
 
-.gallery-grid article {
+.gallery-grid .gallery-card {
     min-height: 190px;
     display: flex;
     align-items: end;
+    width: 100%;
     padding: 1.25rem;
+    border: 0;
     border-radius: 12px;
     background:
         linear-gradient(145deg, rgba(31, 63, 100, 0.88), rgba(63, 116, 84, 0.78)),
-        var(--soft);
+        var(--cover, var(--soft));
+    background-size: cover;
+    background-position: center;
     color: #fff;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.gallery-grid article:hover {
+.gallery-grid .gallery-card:hover,
+.gallery-grid .gallery-card:focus-visible {
     transform: translateY(-4px) scale(1.01);
     box-shadow: 0 12px 24px rgba(31, 63, 100, 0.25);
     background:
         linear-gradient(145deg, rgba(31, 63, 100, 0.94), rgba(63, 116, 84, 0.84)),
-        var(--soft);
+        var(--cover, var(--soft));
+    background-size: cover;
+    background-position: center;
+}
+
+.gallery-grid .gallery-card:focus-visible {
+    outline: 3px solid var(--yellow);
+    outline-offset: 2px;
 }
 
 .gallery-grid span {
     font-weight: 700;
 }
 
+/* Gallery photo modals */
+.gallery-modal .modal-content {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+.gallery-modal .modal-header {
+    background: var(--navy);
+    color: #fff;
+    border-bottom: 0;
+    border-radius: 12px 12px 0 0;
+}
+
+.gallery-modal .modal-title {
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.4rem;
+}
+
+.gallery-modal .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.photo-placeholder {
+    aspect-ratio: 4 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed var(--line);
+    border-radius: 10px;
+    background: var(--soft);
+    color: var(--muted);
+    font-weight: 600;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
 .inquiry-form {
     display: grid;
     gap: 1rem;
@@ -534,5 +595,9 @@ a {
 
     .section {
         padding: 3rem 0;
+    }
+
+    .photo-grid {
+        grid-template-columns: 1fr;
     }
 }
