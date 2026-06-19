@@ -147,9 +147,64 @@
 
         .inq-empty { text-align:center; padding:2rem; color:var(--muted); font-size:0.95rem; }
 
+        @media (max-width:768px) {
+            /* Inquiry panel header stacks on tablet */
+            #inquiries-panel > div:first-child {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            #inquiries-panel > div:first-child > div {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.4rem;
+            }
+        }
+
         @media (max-width:600px) {
-            .profile-edit-row { grid-template-columns:1fr; }
-            .dash-grid { grid-template-columns:1fr 1fr; }
+            .profile-edit-row { grid-template-columns: 1fr; }
+            .dash-grid        { grid-template-columns: 1fr 1fr; }
+
+            /* Dashboard title — stack greeting + sign out button */
+            .page-title .container[style*="justify-content:space-between"] {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            /* Inquiry card header — stack name row and status controls */
+            .inq-header {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .inq-header > div:last-child {
+                align-self: flex-start;
+            }
+
+            /* Inquiry meta — break into lines instead of one long run */
+            .inq-meta {
+                display: flex;
+                flex-direction: column;
+                gap: 0.2rem;
+                line-height: 1.5;
+            }
+            .inq-meta span.sep { display: none; }
+
+            /* Status select fits full width on very small screens */
+            .status-select { font-size: 0.78rem; }
+
+            /* Filter buttons wrap nicely */
+            .inq-filter { padding: 0.22rem 0.65rem; font-size: 0.78rem; }
+
+            /* dash-sub (member since) wraps gracefully */
+            #dash-sub { font-size: 0.82rem; word-break: break-word; }
+
+            /* User table font size */
+            .user-table { font-size: 0.82rem; }
+            .user-table th, .user-table td { padding: 0.5rem 0.6rem; }
+        }
+
+        @media (max-width:400px) {
+            .dash-grid { grid-template-columns: 1fr; }
+            .dashboard-card { padding: 1rem; }
         }
     </style>
 </head>
@@ -623,10 +678,13 @@ function renderInquiries(filter) {
                 </div>
             </div>
             <div class="inq-meta">
-                Parent: <strong>${inq.parent_name}</strong>
-                &nbsp;·&nbsp; <a href="tel:${inq.phone}">${inq.phone}</a>
-                &nbsp;·&nbsp; <a href="mailto:${inq.email}">${inq.email}</a>
-                &nbsp;·&nbsp; Submitted ${date}
+                <span>Parent: <strong>${inq.parent_name}</strong></span>
+                <span class="sep">&nbsp;·&nbsp;</span>
+                <span><a href="tel:${inq.phone}">${inq.phone}</a></span>
+                <span class="sep">&nbsp;·&nbsp;</span>
+                <span><a href="mailto:${inq.email}">${inq.email}</a></span>
+                <span class="sep">&nbsp;·&nbsp;</span>
+                <span>Submitted ${date}</span>
             </div>
             ${inq.message ? `<div class="inq-msg">${inq.message}</div>` : ''}
         </div>`;
