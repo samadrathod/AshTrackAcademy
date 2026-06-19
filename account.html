@@ -109,6 +109,44 @@
         }
         @keyframes spin { to { transform:rotate(360deg); } }
 
+        /* Inquiry cards */
+        .inq-card {
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 1rem 1.1rem;
+            margin-bottom: 0.75rem;
+            background: var(--soft);
+            transition: box-shadow 0.2s;
+        }
+        .inq-card:last-child { margin-bottom: 0; }
+        .inq-card:hover { box-shadow: 0 4px 14px rgba(23,32,51,0.08); }
+        .inq-header { display:flex; align-items:flex-start; justify-content:space-between; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.5rem; }
+        .inq-name   { font-weight:700; font-size:1rem; }
+        .inq-meta   { font-size:0.86rem; color:var(--muted); margin-bottom:0.5rem; }
+        .inq-msg    { font-size:0.9rem; color:var(--ink); border-top:1px solid var(--line); padding-top:0.5rem; margin-top:0.5rem; }
+
+        .status-badge {
+            display:inline-block; padding:0.2rem 0.65rem; border-radius:999px;
+            font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap;
+        }
+        .status-new       { background:#fef9ec; color:#92400e; border:1px solid #fde68a; }
+        .status-reviewed  { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+        .status-contacted { background:#f0fdf4; color:#15803d; border:1px solid #86efac; }
+
+        .inq-filter {
+            background:none; border:1px solid var(--line); border-radius:999px;
+            padding:0.25rem 0.8rem; font-size:0.82rem; font-weight:700;
+            color:var(--muted); cursor:pointer; transition:all 0.2s;
+        }
+        .inq-filter.active, .inq-filter:hover { background:var(--navy); color:#fff; border-color:var(--navy); }
+
+        .status-select {
+            border:1px solid var(--line); border-radius:6px; padding:0.2rem 0.5rem;
+            font-size:0.82rem; font-weight:600; background:#fff; cursor:pointer;
+        }
+
+        .inq-empty { text-align:center; padding:2rem; color:var(--muted); font-size:0.95rem; }
+
         @media (max-width:600px) {
             .profile-edit-row { grid-template-columns:1fr; }
             .dash-grid { grid-template-columns:1fr 1fr; }
@@ -270,7 +308,7 @@
                     </form>
                 </div>
 
-                <!-- Admin panel -->
+                <!-- Admin panel: Users -->
                 <div class="dashboard-card" id="admin-panel" style="display:none;">
                     <p class="section-label">Admin — All Users</p>
                     <div class="alert-box" id="admin-alert"></div>
@@ -282,6 +320,21 @@
                             <tbody id="users-tbody"></tbody>
                         </table>
                     </div>
+                </div>
+
+                <!-- Admin panel: Inquiries -->
+                <div class="dashboard-card" id="inquiries-panel" style="display:none;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:0.75rem;">
+                        <p class="section-label" style="margin:0;">Admin — Admission Inquiries</p>
+                        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                            <button class="inq-filter active" data-filter="all">All</button>
+                            <button class="inq-filter" data-filter="new">New</button>
+                            <button class="inq-filter" data-filter="reviewed">Reviewed</button>
+                            <button class="inq-filter" data-filter="contacted">Contacted</button>
+                        </div>
+                    </div>
+                    <div class="alert-box" id="inquiries-alert"></div>
+                    <div id="inquiries-list"></div>
                 </div>
 
             </div>
@@ -366,9 +419,12 @@ function renderDashboard(profile) {
 
     if (role === 'admin') {
         document.getElementById('admin-panel').style.display = 'block';
+        document.getElementById('inquiries-panel').style.display = 'block';
         loadAllUsers();
+        loadInquiries('all');
     } else {
         document.getElementById('admin-panel').style.display = 'none';
+        document.getElementById('inquiries-panel').style.display = 'none';
     }
 }
 
@@ -497,6 +553,90 @@ async function loadAllUsers() {
         showAlert('admin-alert', 'Could not load users. Check Firestore security rules.', 'error');
     }
 }
+
+// ── Admin: load inquiries ─────────────────────────────────
+let _allInquiries = [];
+
+async function loadInquiries(filter) {
+    const list = document.getElementById('inquiries-list');
+    list.innerHTML = '<p style="color:var(--muted);font-size:0.9rem;padding:1rem 0;">Loading…</p>';
+    try {
+        const snap = await db.collection('inquiries').orderBy('submittedAt', 'desc').get();
+        _allInquiries = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderInquiries(filter || 'all');
+    } catch (err) {
+        showAlert('inquiries-alert', 'Could not load inquiries. Check Firestore security rules.', 'error');
+        list.innerHTML = '';
+    }
+}
+
+function renderInquiries(filter) {
+    const list = document.getElementById('inquiries-list');
+    const items = filter === 'all' ? _allInquiries : _allInquiries.filter(i => i.status === filter);
+
+    if (items.length === 0) {
+        list.innerHTML = `<div class="inq-empty">No ${filter === 'all' ? '' : filter + ' '}inquiries found.</div>`;
+        return;
+    }
+
+    list.innerHTML = items.map(inq => {
+        const date = inq.submittedAt
+            ? new Date(inq.submittedAt.toDate()).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })
+            : '—';
+        const statusClass = 'status-' + (inq.status || 'new');
+        return `
+        <div class="inq-card" id="card-${inq.id}">
+            <div class="inq-header">
+                <div>
+                    <span class="inq-name">${inq.student_name}</span>
+                    &nbsp;·&nbsp;
+                    <span style="color:var(--muted);font-size:0.9rem;">applying for <strong>${inq.class_applying}</strong></span>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0;">
+                    <span class="status-badge ${statusClass}" id="badge-${inq.id}">${inq.status || 'new'}</span>
+                    <select class="status-select" onchange="updateStatus('${inq.id}', this.value)">
+                        <option value="new"       ${inq.status==='new'       ? 'selected':''}>New</option>
+                        <option value="reviewed"  ${inq.status==='reviewed'  ? 'selected':''}>Reviewed</option>
+                        <option value="contacted" ${inq.status==='contacted' ? 'selected':''}>Contacted</option>
+                    </select>
+                </div>
+            </div>
+            <div class="inq-meta">
+                Parent: <strong>${inq.parent_name}</strong>
+                &nbsp;·&nbsp; <a href="tel:${inq.phone}">${inq.phone}</a>
+                &nbsp;·&nbsp; <a href="mailto:${inq.email}">${inq.email}</a>
+                &nbsp;·&nbsp; Submitted ${date}
+            </div>
+            ${inq.message ? `<div class="inq-msg">${inq.message}</div>` : ''}
+        </div>`;
+    }).join('');
+}
+
+async function updateStatus(id, newStatus) {
+    try {
+        await db.collection('inquiries').doc(id).update({ status: newStatus });
+        // Update local cache
+        const inq = _allInquiries.find(i => i.id === id);
+        if (inq) inq.status = newStatus;
+        // Update badge in-place without full re-render
+        const badge = document.getElementById('badge-' + id);
+        if (badge) {
+            badge.textContent = newStatus;
+            badge.className = 'status-badge status-' + newStatus;
+        }
+    } catch (err) {
+        showAlert('inquiries-alert', 'Failed to update status. Try again.', 'error');
+    }
+}
+
+// Inquiry filter buttons
+document.querySelectorAll('.inq-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.inq-filter').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderInquiries(btn.dataset.filter);
+    });
+});
 
 // ── Friendly Firebase error messages ─────────────────────
 function friendlyError(code) {
