@@ -82,8 +82,8 @@ a {
 }
 
 .brand-logo {
-    width: 48px;
-    height: 48px;
+    width: 80px;
+    height: 80px;
     object-fit: contain;
 }
 
@@ -103,15 +103,35 @@ a {
 }
 
 .navbar-nav .nav-link {
+    position: relative;
     color: var(--muted);
     font-weight: 600;
     padding-inline: 0.72rem;
-    transition: color 0.2s ease;
+    transition: color 0.25s ease;
+}
+
+.navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0.72rem;
+    right: 0.72rem;
+    bottom: -1px;
+    height: 2px;
+    background-color: var(--green);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .navbar-nav .nav-link:hover,
 .navbar-nav .nav-link.active {
     color: var(--green);
+}
+
+.navbar-nav .nav-link:hover::after,
+.navbar-nav .nav-link.active::after {
+    transform: scaleX(1);
+    transform-origin: left;
 }
 
 .hero {
@@ -187,7 +207,10 @@ a {
     padding: 0.82rem 1.5rem;
     font-weight: 700;
     text-decoration: none;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1),
+                background-color 0.2s cubic-bezier(0.25, 0.8, 0.25, 1),
+                box-shadow 0.2s cubic-bezier(0.25, 0.8, 0.25, 1),
+                color 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .btn-primary-custom,
@@ -205,6 +228,12 @@ a {
     box-shadow: 0 6px 20px rgba(242, 193, 78, 0.35);
 }
 
+.btn-primary-custom:active,
+.inquiry-form button:active {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 3px 10px rgba(242, 193, 78, 0.25);
+}
+
 .btn-light-custom {
     background: rgba(255, 255, 255, 0.92);
     color: var(--ink);
@@ -216,6 +245,11 @@ a {
     color: var(--green);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(255, 255, 255, 0.25);
+}
+
+.btn-light-custom:active {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
 }
 
 .section {
@@ -266,14 +300,16 @@ a {
     border: 1px solid var(--line);
     border-radius: 12px;
     box-shadow: var(--shadow);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+                box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+                border-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .notice-board:hover,
 .contact-grid article:hover,
 .faculty-grid article:hover,
 .facility-list article:hover {
-    transform: translateY(-5px);
+    transform: translateY(-6px);
     box-shadow: 0 22px 50px rgba(23, 32, 51, 0.16);
     border-color: rgba(63, 116, 84, 0.25);
 }
@@ -337,14 +373,17 @@ a {
     border-radius: 12px;
     color: #fff;
     text-decoration: none;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+                background-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+                border-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+                box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .quick-grid a:hover {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 255, 255, 0.4);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
 }
 
 .quick-grid span,
@@ -552,6 +591,11 @@ img {
         font-size: 0.95rem;
     }
 
+    .navbar-nav .nav-link::after {
+        left: 0;
+        right: 0;
+    }
+
     .intro-grid,
     .form-layout,
     .contact-grid,
@@ -599,5 +643,75 @@ img {
 
     .photo-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* --- Added for Micro-interactions and Scroll Animations --- */
+
+/* Photo grid image hover zoom interaction */
+.photo-grid img {
+    border-radius: 8px;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+                box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.photo-grid img:hover {
+    transform: scale(1.04);
+    box-shadow: 0 10px 20px rgba(23, 32, 51, 0.18);
+}
+
+/* Scroll behavior fallback */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Scroll reveal initial states and transitions */
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+                transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    will-change: opacity, transform;
+}
+
+.reveal-on-scroll.reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Stagger reveal styles for children item lists */
+.reveal-on-scroll .reveal-stagger-item {
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+                transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    transition-delay: calc(var(--index, 0) * 80ms);
+    will-change: opacity, transform;
+}
+
+.reveal-on-scroll.reveal-visible .reveal-stagger-item {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Accessibility: Respect system settings for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-delay: -1ms !important;
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        background-attachment: initial !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0s !important;
+        transition-delay: 0s !important;
+    }
+    
+    .reveal-on-scroll,
+    .reveal-on-scroll .reveal-stagger-item {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
     }
 }
