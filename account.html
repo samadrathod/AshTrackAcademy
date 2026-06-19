@@ -214,11 +214,32 @@
                         <label>Email
                             <input type="email" name="email" autocomplete="email" placeholder="your@email.com" required>
                         </label>
-                        <label>Password
+                        <label style="position:relative;">
+                            <span style="display:flex;align-items:center;justify-content:space-between;">
+                                Password
+                                <button type="button" id="forgot-link" style="background:none;border:none;color:var(--green);font-size:0.82rem;font-weight:700;cursor:pointer;padding:0;line-height:1;">Forgot password?</button>
+                            </span>
                             <input type="password" name="password" autocomplete="current-password" placeholder="Your password" required>
                         </label>
                         <button type="submit" id="login-btn">Sign In</button>
                     </form>
+
+                    <!-- Forgot password inline panel -->
+                    <div id="reset-panel" style="display:none;margin-top:1.25rem;padding:1.1rem;background:var(--soft);border:1px solid var(--line);border-radius:10px;">
+                        <p style="font-weight:700;font-size:0.95rem;margin-bottom:0.6rem;">Reset your password</p>
+                        <p style="font-size:0.87rem;color:var(--muted);margin-bottom:0.9rem;">Enter your account email and we'll send you a reset link.</p>
+                        <div class="alert-box" id="reset-alert"></div>
+                        <form class="inquiry-form" id="reset-form" novalidate style="gap:0.75rem;">
+                            <label style="margin:0;">Email
+                                <input type="email" name="reset_email" autocomplete="email" placeholder="your@email.com" required>
+                            </label>
+                            <div style="display:flex;gap:0.6rem;">
+                                <button type="submit" id="reset-btn" style="flex:1;">Send reset link</button>
+                                <button type="button" id="reset-cancel" style="flex:0 0 auto;background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:0.55rem 1rem;font-weight:600;cursor:pointer;font-size:0.9rem;">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
                     <p style="font-size:0.88rem;color:var(--muted);margin-top:1rem;text-align:center;">
                         Don't have an account? <button class="auth-tab" data-tab="register" style="background:none;border:none;color:var(--green);font-weight:700;cursor:pointer;padding:0;">Register here</button>
                     </p>
@@ -636,6 +657,39 @@ document.querySelectorAll('.inq-filter').forEach(btn => {
         btn.classList.add('active');
         renderInquiries(btn.dataset.filter);
     });
+});
+
+// ── Forgot password ───────────────────────────────────────
+document.getElementById('forgot-link').addEventListener('click', () => {
+    const panel = document.getElementById('reset-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    clearAlert('reset-alert');
+    document.getElementById('reset-form').reset();
+    // Pre-fill email if the user already typed it
+    const loginEmail = document.querySelector('#login-form input[name="email"]').value.trim();
+    if (loginEmail) document.querySelector('#reset-form input[name="reset_email"]').value = loginEmail;
+});
+
+document.getElementById('reset-cancel').addEventListener('click', () => {
+    document.getElementById('reset-panel').style.display = 'none';
+    clearAlert('reset-alert');
+});
+
+document.getElementById('reset-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    clearAlert('reset-alert');
+    const btn   = document.getElementById('reset-btn');
+    const email = new FormData(e.target).get('reset_email').trim();
+    if (!email) return showAlert('reset-alert', 'Please enter your email address.', 'error');
+    setLoading(btn, true);
+    try {
+        await auth.sendPasswordResetEmail(email);
+        showAlert('reset-alert', `Reset link sent to ${email}. Check your inbox (and spam folder).`, 'success');
+        document.getElementById('reset-form').reset();
+    } catch (err) {
+        showAlert('reset-alert', friendlyError(err.code), 'error');
+    }
+    setLoading(btn, false);
 });
 
 // ── Friendly Firebase error messages ─────────────────────
