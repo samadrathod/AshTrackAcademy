@@ -3,6 +3,15 @@
  * Handcrafted vanilla JavaScript with performance and accessibility in mind.
  */
 
+// Preloader
+window.addEventListener('load', () => {
+    const preloader = document.getElementById('preloader');
+    if (preloader) {
+        preloader.classList.add('fade-out');
+        preloader.addEventListener('transitionend', () => preloader.remove(), { once: true });
+    }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Scroll Reveal with Intersection Observer
     const revealCallback = (entries, observer) => {
